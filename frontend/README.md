@@ -1,75 +1,21 @@
-# React + TypeScript + Vite
+# WorkSpace Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+واجهة عربية RTL باستخدام React وTypeScript وVite وReact Router.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```sh
+npm ci
+npm run dev
+npm run build
+npm run test:e2e
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+تتصل الواجهة بمسارات `/api` على نفس المضيف. يمرر Vite الطلبات إلى FastAPI على `127.0.0.1:8000`، ويمكن تغيير وجهته عبر `API_PROXY_TARGET`. يستخدم Docker خادم Nginx مع نفس المسارات.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- `src/App.tsx`: التحقق من الجلسة وحماية المسارات وتخطيط مساحة العمل.
+- `src/pages/`: الدخول، الحسابات، وتغيير كلمة المرور.
+- `src/components/Brand.tsx`: الهوية المشتركة.
+- `src/api.ts`: أنواع المستخدمين وعميل HTTP ومعالجة الأخطاء.
+- `tests/auth.spec.ts`: اختبار المتصفح على بيئة منفصلة ومؤقتة.
+- `examples/TaskCounter.tsx`: تمرين عدّ المهام السابق محفوظ للتعلّم.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+اختبار المتصفح يستخدم Microsoft Edge افتراضيًا، ويتطلب بيئة Python وتبعيات التطوير في `../backend/.venv`. للتفاصيل وإعداد PostgreSQL وحساب المسؤول راجع [تعليمات المشروع](../README.md).
