@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, event, select
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
@@ -25,6 +25,8 @@ def setup():
     url = os.environ.get("TEST_DATABASE_URL", "sqlite://")
     kwargs = {"connect_args": {"check_same_thread": False}, "poolclass": StaticPool} if url == "sqlite://" else {}
     engine = create_engine(url, **kwargs)
+    if engine.dialect.name == "sqlite":
+        event.listen(engine, "connect", lambda connection, _: connection.execute("PRAGMA foreign_keys=ON"))
     Base.metadata.create_all(engine)
     with Session(engine) as db:
         db.add_all([User(name="المسؤول", email="admin@example.com", role=Role.ADMIN, password_hash=password_hasher.hash(PASSWORD)),

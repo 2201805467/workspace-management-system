@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { api, ApiError, errorMessage, roleLabels } from "./api";
 import type { User } from "./api";
 import { Brand } from "./components/Brand";
 import { Login } from "./pages/Login";
 import { PasswordForm } from "./pages/PasswordForm";
 import { Users } from "./pages/Users";
+import { Projects } from "./pages/Projects";
+import { ProjectDetails } from "./pages/ProjectDetails";
+import { TaskDetails } from "./pages/TaskDetails";
+import { MyTasks } from "./pages/MyTasks";
+import "./Work.css";
 import "./App.css";
 
 function App() {
@@ -15,12 +26,17 @@ function App() {
   const [notice, setNotice] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-  const page =
-    location.pathname === "/users"
-      ? "users"
-      : location.pathname === "/password"
-        ? "password"
-        : "home";
+  const page = location.pathname.startsWith("/projects")
+    ? "projects"
+    : location.pathname.startsWith("/tasks/")
+      ? "task"
+      : location.pathname === "/my-tasks"
+        ? "my-tasks"
+        : location.pathname === "/users"
+          ? "users"
+          : location.pathname === "/password"
+            ? "password"
+            : "home";
   const setPage = (page: string) =>
     navigate(page === "home" ? "/" : `/${page}`);
   const [logoutError, setLogoutError] = useState("");
@@ -85,7 +101,10 @@ function App() {
     );
   if (
     location.pathname === "/login" ||
-    !["/", "/users", "/password"].includes(location.pathname)
+    (!["/", "/users", "/password", "/projects", "/my-tasks"].includes(
+      location.pathname,
+    ) &&
+      !/^\/(projects|tasks)\/[^/]+$/.test(location.pathname))
   )
     return <Navigate to="/" replace />;
   if (page === "users" && user.role !== "Admin")
@@ -101,6 +120,18 @@ function App() {
             onClick={() => setPage("home")}
           >
             الرئيسية <span>⌂</span>
+          </button>
+          <button
+            className={page === "projects" ? "selected" : ""}
+            onClick={() => setPage("projects")}
+          >
+            المشاريع <span>▦</span>
+          </button>
+          <button
+            className={page === "my-tasks" ? "selected" : ""}
+            onClick={() => setPage("my-tasks")}
+          >
+            مهامي <span>✓</span>
           </button>
           {user.role === "Admin" && (
             <button
@@ -129,11 +160,17 @@ function App() {
         <header>
           <span>
             الشركة /{" "}
-            {page === "home"
-              ? "الرئيسية"
-              : page === "users"
-                ? "حسابات الفريق"
-                : "كلمة المرور"}
+            {page === "projects"
+              ? "المشاريع"
+              : page === "my-tasks"
+                ? "مهامي"
+                : page === "task"
+                  ? "تفاصيل المهمة"
+                  : page === "home"
+                    ? "الرئيسية"
+                    : page === "users"
+                      ? "حسابات الفريق"
+                      : "كلمة المرور"}
           </span>
           <button disabled={loggingOut} onClick={() => void logout()}>
             {loggingOut ? "جارٍ الخروج…" : "تسجيل الخروج ↗"}
@@ -154,11 +191,11 @@ function App() {
               </h1>
               <p className="muted">تم تسجيل دخولك. حسابك جاهز لبدء العمل.</p>
               <section className="welcome-card">
-                <span className="pill">المرحلة الأولى</span>
+                <span className="pill">مساحة عمل الشركة</span>
                 <h2>
-                  الأساس جاهز.
+                  كل مشروع له وجهة.
                   <br />
-                  والخطوة التالية تبدأ من هنا.
+                  وكل مهمة تقرّبك منها.
                 </h2>
                 <p>
                   يمكنك الآن إدارة حسابك
@@ -180,6 +217,12 @@ function App() {
                   </button>
                 )}
               </section>
+              <div className="home-links">
+                <button className="primary" onClick={() => setPage("projects")}>
+                  تصفح المشاريع ←
+                </button>
+                <button onClick={() => setPage("my-tasks")}>عرض مهامي ←</button>
+              </div>
               <section className="card profile-card">
                 <h2>حسابك</h2>
                 <dl>
@@ -201,6 +244,21 @@ function App() {
               </section>
             </>
           )}
+          <Routes>
+            <Route path="/projects" element={<Projects user={user} />} />
+            <Route
+              path="/projects/:projectId"
+              element={<ProjectDetails key={location.pathname} user={user} />}
+            />
+            <Route
+              path="/tasks/:taskId"
+              element={<TaskDetails key={location.pathname} user={user} />}
+            />
+            <Route path="/my-tasks" element={<MyTasks user={user} />} />
+            <Route path="/" element={null} />
+            <Route path="/users" element={null} />
+            <Route path="/password" element={null} />
+          </Routes>
           {page === "users" && user.role === "Admin" && <Users self={user} />}
           {page === "password" && (
             <PasswordForm

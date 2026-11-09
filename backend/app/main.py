@@ -1,4 +1,5 @@
 import secrets
+import logging
 import threading
 import time
 from collections import defaultdict, deque
@@ -9,12 +10,13 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy import delete, select, text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 
 from .config import get_settings
 from .models import AccessSession, User
 from .schemas import Login, PasswordChange, PasswordReset, UserCreate, UserOut, UserStatus
 from .security import Admin, COOKIE_NAME, CurrentUser, Db, dummy_hash, hash_token, password_hasher
+from .work_routes import router as work_router
 
 
 def check_csrf(request: Request, x_requested_with: Annotated[str | None, Header()] = None):
@@ -26,7 +28,24 @@ def check_csrf(request: Request, x_requested_with: Annotated[str | None, Header(
             raise HTTPException(403, "مصدر الطلب غير مسموح")
 
 
-app = FastAPI(title="WorkSpace API", version="0.1.0", dependencies=[Depends(check_csrf)])
+app = FastAPI(title="WorkSpace API", version="0.2.0", dependencies=[Depends(check_csrf)])
+app.include_router(work_router)
+logger = logging.getLogger("workspace")
+
+
+@app.exception_handler(SQLAlchemyError)
+async def database_error(request: Request, error: SQLAlchemyError):
+    # Exception strings can include SQL parameters or credentials: log the type only.
+    logger.error("database_failure method=%s path=%s type=%s", request.method, request.url.path, type(error).__name__)
+    unavailable = isinstance(error, OperationalError)
+    return JSONResponse(status_code=503 if unavailable else 500, content={
+        "detail": "قاعدة البيانات غير متاحة مؤقتًا. حاول مجددًا." if unavailable else "تعذر إتمام العملية. حاول مجددًا."})
+
+
+@app.exception_handler(Exception)
+async def unexpected_error(request: Request, error: Exception):
+    logger.error("unexpected_failure method=%s path=%s type=%s", request.method, request.url.path, type(error).__name__)
+    return JSONResponse(status_code=500, content={"detail": "حدث خطأ غير متوقع. حاول مجددًا."})
 
 
 @app.exception_handler(RequestValidationError)
