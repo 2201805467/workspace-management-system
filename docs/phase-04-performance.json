@@ -1,0 +1,154 @@
+{
+  "dataset": {
+    "categories": 50,
+    "articles": 10000,
+    "files": 20000,
+    "synthetic_extracted_text": true
+  },
+  "samples": 5,
+  "without_gin": {
+    "median_ms": 266.65,
+    "max_ms": 292.47,
+    "total": 12
+  },
+  "plan_before": [
+    {
+      "Plan": {
+        "Node Type": "Seq Scan",
+        "Parallel Aware": false,
+        "Async Capable": false,
+        "Relation Name": "knowledge_articles",
+        "Alias": "knowledge_articles",
+        "Startup Cost": 0.0,
+        "Total Cost": 1237.0,
+        "Plan Rows": 50,
+        "Plan Width": 37,
+        "Actual Startup Time": 0.012,
+        "Actual Total Time": 2.063,
+        "Actual Rows": 10,
+        "Actual Loops": 1,
+        "Filter": "(search_vector @@ '''quartzneedle'''::tsquery)",
+        "Rows Removed by Filter": 9990,
+        "Shared Hit Blocks": 1112,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0
+      },
+      "Planning": {
+        "Shared Hit Blocks": 0,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0
+      },
+      "Planning Time": 0.182,
+      "Triggers": [],
+      "Execution Time": 2.071
+    }
+  ],
+  "with_gin": {
+    "median_ms": 80.09,
+    "max_ms": 103.4,
+    "total": 12
+  },
+  "plan_after": [
+    {
+      "Plan": {
+        "Node Type": "Bitmap Heap Scan",
+        "Parallel Aware": false,
+        "Async Capable": false,
+        "Relation Name": "knowledge_articles",
+        "Alias": "knowledge_articles",
+        "Startup Cost": 13.08,
+        "Total Cost": 178.85,
+        "Plan Rows": 50,
+        "Plan Width": 37,
+        "Actual Startup Time": 0.044,
+        "Actual Total Time": 0.059,
+        "Actual Rows": 10,
+        "Actual Loops": 1,
+        "Recheck Cond": "(search_vector @@ '''quartzneedle'''::tsquery)",
+        "Rows Removed by Index Recheck": 0,
+        "Exact Heap Blocks": 10,
+        "Lossy Heap Blocks": 0,
+        "Shared Hit Blocks": 13,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0,
+        "Plans": [
+          {
+            "Node Type": "Bitmap Index Scan",
+            "Parent Relationship": "Outer",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Index Name": "ix_articles_search",
+            "Startup Cost": 0.0,
+            "Total Cost": 13.07,
+            "Plan Rows": 50,
+            "Plan Width": 0,
+            "Actual Startup Time": 0.037,
+            "Actual Total Time": 0.037,
+            "Actual Rows": 10,
+            "Actual Loops": 1,
+            "Index Cond": "(search_vector @@ '''quartzneedle'''::tsquery)",
+            "Shared Hit Blocks": 3,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          }
+        ]
+      },
+      "Planning": {
+        "Shared Hit Blocks": 1,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0
+      },
+      "Planning Time": 0.231,
+      "Triggers": [],
+      "Execution Time": 0.09
+    }
+  ],
+  "page_20": {
+    "elapsed_ms": 1229.06,
+    "select_queries": 4,
+    "total": 10002
+  },
+  "page_100": {
+    "elapsed_ms": 1178.27,
+    "select_queries": 4,
+    "total": 10002
+  },
+  "python_peak_page_20_bytes": 253740,
+  "eight_searches_four_threads_ms": 433.03,
+  "employee_authorized_total": 8
+}

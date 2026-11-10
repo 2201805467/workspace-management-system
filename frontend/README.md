@@ -24,6 +24,13 @@ npm run test:e2e
 - `src/components/ProjectFiles.tsx` و`FileUpload.tsx`: الوثائق والتصفية وتقدم الرفع والتنزيل والحذف.
 - `src/files.ts`: أنواع الملفات ورفع multipart باستخدام XMLHttpRequest للتقدم وتنزيل محمي مع حالات الخطأ.
 - `tests/files.spec.ts`: اختبار الأسماء العربية والتنزيل المطابق والرفض والتصفية وصلاحية حذف الموظف لملفه.
+- `src/pages/Knowledge.tsx` و`KnowledgeCategories.tsx`: المقالات والتصنيفات والتصفية والتصفح.
+- `src/pages/ArticleEditor.tsx` و`ArticleDetails.tsx`: تحرير Markdown ومعاينته ونشر المقال وأرشفته، مع تنبيه قبل مغادرة التعديلات غير المحفوظة.
+- `src/pages/GlobalSearch.tsx`: البحث الموحد والمقتطفات المميزة والفلاتر والتصفح.
+- `src/components/Markdown.tsx`: عرض Markdown مع تجاهل HTML وتقييد الروابط، وتمييز نص المقتطف دون HTML مباشر.
+- `src/components/PagedChoice.tsx`: اختيارات التصنيفات والمشاريع المتصفحة.
+- `src/knowledge.ts` و`Knowledge.css`: الأنواع وتنسيق RTL؛ الصفحات ومكتبة Markdown تُحمّل عند الحاجة.
+- `tests/knowledge.spec.ts`: التحرير والنشر وسلامة المعاينة والبحث العربي وصلاحية القراءة للموظف. يتطلب `BROWSER_TEST_DATABASE_URL` إلى قاعدة PostgreSQL مستقلة تنتهي بـ`_browser_test` ويعيد تهيئتها.
 - `examples/TaskCounter.tsx`: تمرين عدّ المهام السابق محفوظ للتعلّم.
 
 اختبار المتصفح يستخدم Microsoft Edge افتراضيًا، ويتطلب بيئة Python وتبعيات التطوير في `../backend/.venv`. للتفاصيل وإعداد PostgreSQL وحساب المسؤول راجع [تعليمات المشروع](../README.md).

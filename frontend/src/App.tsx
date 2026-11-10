@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import {
   Navigate,
   Route,
@@ -18,6 +18,30 @@ import { TaskDetails } from "./pages/TaskDetails";
 import { MyTasks } from "./pages/MyTasks";
 import "./Work.css";
 import "./Files.css";
+import "./Knowledge.css";
+const Knowledge = lazy(() =>
+  import("./pages/Knowledge").then((module) => ({ default: module.Knowledge })),
+);
+const KnowledgeCategories = lazy(() =>
+  import("./pages/KnowledgeCategories").then((module) => ({
+    default: module.KnowledgeCategories,
+  })),
+);
+const ArticleDetails = lazy(() =>
+  import("./pages/ArticleDetails").then((module) => ({
+    default: module.ArticleDetails,
+  })),
+);
+const ArticleEditor = lazy(() =>
+  import("./pages/ArticleEditor").then((module) => ({
+    default: module.ArticleEditor,
+  })),
+);
+const GlobalSearch = lazy(() =>
+  import("./pages/GlobalSearch").then((module) => ({
+    default: module.GlobalSearch,
+  })),
+);
 import "./App.css";
 
 function App() {
@@ -27,17 +51,21 @@ function App() {
   const [notice, setNotice] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-  const page = location.pathname.startsWith("/projects")
-    ? "projects"
-    : location.pathname.startsWith("/tasks/")
-      ? "task"
-      : location.pathname === "/my-tasks"
-        ? "my-tasks"
-        : location.pathname === "/users"
-          ? "users"
-          : location.pathname === "/password"
-            ? "password"
-            : "home";
+  const page = location.pathname.startsWith("/knowledge")
+    ? "knowledge"
+    : location.pathname === "/search"
+      ? "search"
+      : location.pathname.startsWith("/projects")
+        ? "projects"
+        : location.pathname.startsWith("/tasks/")
+          ? "task"
+          : location.pathname === "/my-tasks"
+            ? "my-tasks"
+            : location.pathname === "/users"
+              ? "users"
+              : location.pathname === "/password"
+                ? "password"
+                : "home";
   const setPage = (page: string) =>
     navigate(page === "home" ? "/" : `/${page}`);
   const [logoutError, setLogoutError] = useState("");
@@ -102,20 +130,50 @@ function App() {
     );
   if (
     location.pathname === "/login" ||
-    (!["/", "/users", "/password", "/projects", "/my-tasks"].includes(
-      location.pathname,
-    ) &&
-      !/^\/(projects|tasks)\/[^/]+$/.test(location.pathname))
+    (![
+      "/",
+      "/users",
+      "/password",
+      "/projects",
+      "/my-tasks",
+      "/knowledge",
+      "/knowledge/new",
+      "/knowledge/categories",
+      "/search",
+    ].includes(location.pathname) &&
+      !/^\/(projects|tasks|knowledge)\/[^/]+(?:\/edit)?$/.test(
+        location.pathname,
+      ))
   )
     return <Navigate to="/" replace />;
   if (page === "users" && user.role !== "Admin")
     return <Navigate to="/" replace />;
+  if (location.pathname === "/knowledge/categories" && user.role !== "Admin")
+    return <Navigate to="/knowledge" replace />;
+  if (
+    (location.pathname === "/knowledge/new" ||
+      location.pathname.endsWith("/edit")) &&
+    user.role === "Employee"
+  )
+    return <Navigate to="/knowledge" replace />;
   return (
     <div className="app-layout">
       <aside className="sidebar">
         <Brand />
         <span className="nav-label">مساحة العمل</span>
         <nav aria-label="التنقل الرئيسي">
+          <button
+            className={page === "knowledge" ? "selected" : ""}
+            onClick={() => setPage("knowledge")}
+          >
+            قاعدة المعرفة <span>▤</span>
+          </button>
+          <button
+            className={page === "search" ? "selected" : ""}
+            onClick={() => setPage("search")}
+          >
+            البحث الموحد <span>⌕</span>
+          </button>
           <button
             className={page === "home" ? "selected" : ""}
             onClick={() => setPage("home")}
@@ -161,17 +219,21 @@ function App() {
         <header>
           <span>
             الشركة /{" "}
-            {page === "projects"
-              ? "المشاريع"
-              : page === "my-tasks"
-                ? "مهامي"
-                : page === "task"
-                  ? "تفاصيل المهمة"
-                  : page === "home"
-                    ? "الرئيسية"
-                    : page === "users"
-                      ? "حسابات الفريق"
-                      : "كلمة المرور"}
+            {page === "knowledge"
+              ? "قاعدة المعرفة"
+              : page === "search"
+                ? "البحث الموحد"
+                : page === "projects"
+                  ? "المشاريع"
+                  : page === "my-tasks"
+                    ? "مهامي"
+                    : page === "task"
+                      ? "تفاصيل المهمة"
+                      : page === "home"
+                        ? "الرئيسية"
+                        : page === "users"
+                          ? "حسابات الفريق"
+                          : "كلمة المرور"}
           </span>
           <button disabled={loggingOut} onClick={() => void logout()}>
             {loggingOut ? "جارٍ الخروج…" : "تسجيل الخروج ↗"}
@@ -245,21 +307,41 @@ function App() {
               </section>
             </>
           )}
-          <Routes>
-            <Route path="/projects" element={<Projects user={user} />} />
-            <Route
-              path="/projects/:projectId"
-              element={<ProjectDetails key={location.pathname} user={user} />}
-            />
-            <Route
-              path="/tasks/:taskId"
-              element={<TaskDetails key={location.pathname} user={user} />}
-            />
-            <Route path="/my-tasks" element={<MyTasks user={user} />} />
-            <Route path="/" element={null} />
-            <Route path="/users" element={null} />
-            <Route path="/password" element={null} />
-          </Routes>
+          <Suspense fallback={<p role="status">جارٍ تحميل الصفحة…</p>}>
+            <Routes>
+              <Route path="/knowledge" element={<Knowledge user={user} />} />
+              <Route
+                path="/knowledge/categories"
+                element={<KnowledgeCategories />}
+              />
+              <Route
+                path="/knowledge/new"
+                element={<ArticleEditor user={user} />}
+              />
+              <Route
+                path="/knowledge/:articleId"
+                element={<ArticleDetails />}
+              />
+              <Route
+                path="/knowledge/:articleId/edit"
+                element={<ArticleEditor user={user} />}
+              />
+              <Route path="/search" element={<GlobalSearch />} />
+              <Route path="/projects" element={<Projects user={user} />} />
+              <Route
+                path="/projects/:projectId"
+                element={<ProjectDetails key={location.pathname} user={user} />}
+              />
+              <Route
+                path="/tasks/:taskId"
+                element={<TaskDetails key={location.pathname} user={user} />}
+              />
+              <Route path="/my-tasks" element={<MyTasks user={user} />} />
+              <Route path="/" element={null} />
+              <Route path="/users" element={null} />
+              <Route path="/password" element={null} />
+            </Routes>
+          </Suspense>
           {page === "users" && user.role === "Admin" && <Users self={user} />}
           {page === "password" && (
             <PasswordForm

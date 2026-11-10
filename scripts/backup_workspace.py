@@ -28,7 +28,7 @@ def backup():
     destination = ROOT / "backups" / name
     destination.mkdir(parents=True)
     running = run(COMPOSE + ["ps", "--status", "running", "--services"], capture_output=True, text=True).stdout.split()
-    writers = [service for service in ["frontend", "backend"] if service in running]
+    writers = [service for service in ["frontend", "backend", "indexer"] if service in running]
     try:
         if writers: run(COMPOSE + ["stop", *writers])
         with (destination / "database.dump").open("wb") as output:
@@ -96,6 +96,8 @@ def restore_check(destination):
             run(arguments + ["run", "--rm", "-T", "--no-deps", "--user", "appuser", "--entrypoint", "python", "verifier", "-c", code], stdin=source, env=environment)
         result = run(arguments + ["run", "--rm", "-T", "--no-deps", "verifier"], env=environment, capture_output=True, text=True)
         report = json.loads(result.stdout.strip().splitlines()[-1])
+        search_result=run(arguments+["run","--rm","-T","--no-deps","verifier","python","-m","app.search_maintenance","--check"],env=environment,capture_output=True,text=True)
+        report['search']=json.loads(search_result.stdout.strip().splitlines()[-1])
         (destination / "restore-check.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
         print(f"Isolated restore verified: {report['records']} file records, matching sizes and SHA-256 checksums.")
     finally:

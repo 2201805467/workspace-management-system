@@ -13,7 +13,7 @@ from .config import get_settings
 from .file_schemas import FileOut
 from .file_storage import CHUNK_SIZE, PrivateStorage, storage_unavailable
 from .file_validation import validate_content, validate_name
-from .models import ProjectFile, Role, utcnow
+from .models import FileSearchIndex, ProjectFile, Role, utcnow
 from .work_repository import paginate
 from .work_services import get_project
 
@@ -80,6 +80,8 @@ def upload_file(db, user, project_id, upload):
                               size_bytes=size, checksum=digest.hexdigest())
             db.add(row)
             db.flush()
+            if db.get_bind().dialect.name == 'sqlite':
+                db.add(FileSearchIndex(file_id=row.id,indexing_status='pending'))
             committing = True
             db.commit()
             final = None  # A committed object must never be removed by response serialization errors.

@@ -106,7 +106,9 @@ test("Admin and employee complete the project/task workflow in Arabic", async ({
     employee.getByRole("row").filter({ hasText: "تصميم الصفحة الرئيسية" }),
   ).toBeVisible();
   await employee.getByLabel("حالة تصميم الصفحة الرئيسية").selectOption("done");
-  await expect(employee.getByRole("status")).toContainText("تم تحديث");
+  await expect(
+    employee.getByRole("status").filter({ hasText: "تم تحديث" }),
+  ).toBeVisible();
   await employee.getByRole("link", { name: "تصميم الصفحة الرئيسية" }).click();
   await expect(
     employee.getByRole("heading", { name: "تصميم الصفحة الرئيسية" }),

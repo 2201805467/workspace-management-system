@@ -25,6 +25,7 @@ from tests.test_work import work
 @pytest.fixture
 def files(work, tmp_path, monkeypatch):
     monkeypatch.setattr(get_settings(), "file_storage_path", tmp_path)
+    monkeypatch.setenv('FILE_STORAGE_PATH', str(tmp_path))
     return (*work, tmp_path)
 
 

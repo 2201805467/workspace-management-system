@@ -3,7 +3,8 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event, select
+from sqlalchemy import create_engine, event, select, text
+from pathlib import Path
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
@@ -27,7 +28,12 @@ def setup():
     engine = create_engine(url, **kwargs)
     if engine.dialect.name == "sqlite":
         event.listen(engine, "connect", lambda connection, _: connection.execute("PRAGMA foreign_keys=ON"))
+    if engine.dialect.name == 'postgresql':
+        with engine.begin() as connection: connection.execute(text('CREATE EXTENSION IF NOT EXISTS pg_trgm'))
     Base.metadata.create_all(engine)
+    if engine.dialect.name == 'postgresql':
+        with engine.begin() as connection:
+            connection.exec_driver_sql((Path(__file__).parents[1] / 'migrations/sql/0004_search.sql').read_text(encoding='utf-8'))
     with Session(engine) as db:
         db.add_all([User(name="المسؤول", email="admin@example.com", role=Role.ADMIN, password_hash=password_hasher.hash(PASSWORD)),
                     User(name="الموظف", email="employee@example.com", role=Role.EMPLOYEE, password_hash=password_hasher.hash(PASSWORD)),

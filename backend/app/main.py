@@ -21,6 +21,7 @@ from .security import Admin, COOKIE_NAME, CurrentUser, Db, dummy_hash, hash_toke
 from .work_routes import router as work_router
 from .file_routes import router as file_router
 from .file_storage import PrivateStorage
+from .knowledge_routes import router as knowledge_router
 
 
 def check_csrf(request: Request, x_requested_with: Annotated[str | None, Header()] = None):
@@ -66,9 +67,10 @@ async def lifespan(app):
             await task
 
 
-app = FastAPI(title="WorkSpace API", version="0.3.0", dependencies=[Depends(check_csrf)], lifespan=lifespan)
+app = FastAPI(title="WorkSpace API", version="0.4.0", dependencies=[Depends(check_csrf)], lifespan=lifespan)
 app.include_router(work_router)
 app.include_router(file_router)
+app.include_router(knowledge_router)
 logger = logging.getLogger("workspace")
 
 

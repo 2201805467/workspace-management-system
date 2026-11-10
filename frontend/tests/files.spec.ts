@@ -68,15 +68,15 @@ test("Project files upload, validate, download and enforce employee ownership", 
   await page.goto(`/projects/${project.id}`);
   const section = page.locator(".project-files");
   await section.getByRole("button", { name: "+ رفع ملف" }).click();
-  await section
-    .getByLabel("اختر ملفًا")
-    .setInputFiles({
-      name: "صورة الفريق.png",
-      mimeType: "image/png",
-      buffer: png,
-    });
+  await section.getByLabel("اختر ملفًا").setInputFiles({
+    name: "صورة الفريق.png",
+    mimeType: "image/png",
+    buffer: png,
+  });
   await section.getByRole("button", { name: "رفع الملف", exact: true }).click();
-  await expect(section.getByRole("status")).toContainText("تم رفع الملف بنجاح");
+  await expect(
+    section.getByRole("status").filter({ hasText: "تم رفع الملف بنجاح" }),
+  ).toBeVisible();
   const row = section.getByRole("row").filter({ hasText: "صورة الفريق.png" });
   await expect(row).toBeVisible();
   const downloaded = page.waitForEvent("download");
@@ -96,24 +96,20 @@ test("Project files upload, validate, download and enforce employee ownership", 
     section.getByRole("heading", { name: "معلومات الملف" }),
   ).toBeVisible();
   await section.getByRole("button", { name: "إغلاق المعلومات" }).click();
-  await section
-    .getByLabel("اختر ملفًا")
-    .setInputFiles({
-      name: "script.py",
-      mimeType: "text/x-python",
-      buffer: Buffer.from("print(1)"),
-    });
+  await section.getByLabel("اختر ملفًا").setInputFiles({
+    name: "script.py",
+    mimeType: "text/x-python",
+    buffer: Buffer.from("print(1)"),
+  });
   await expect(section.getByRole("alert")).toContainText("اختر ملف");
   await expect(
     section.getByRole("button", { name: "رفع الملف", exact: true }),
   ).toBeDisabled();
-  await section
-    .getByLabel("اختر ملفًا")
-    .setInputFiles({
-      name: "fake.png",
-      mimeType: "image/png",
-      buffer: Buffer.from("not a PNG"),
-    });
+  await section.getByLabel("اختر ملفًا").setInputFiles({
+    name: "fake.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("not a PNG"),
+  });
   await section.getByRole("button", { name: "رفع الملف", exact: true }).click();
   await expect(section.getByRole("alert")).toContainText("لا يتطابق");
   await section.getByLabel("نوع الملف", { exact: true }).selectOption("pdf");

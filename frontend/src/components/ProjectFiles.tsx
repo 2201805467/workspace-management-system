@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api, errorMessage } from "../api";
 import type { User } from "../api";
 import { useResource } from "../hooks/useResource";
@@ -8,6 +8,62 @@ import { formatDate, queryString } from "../work";
 import type { Page, Person, Project } from "../work";
 import { Empty, ErrorBox, Loading, Pager } from "./WorkUI";
 import { FileUpload } from "./FileUpload";
+
+function FileIndexStatus({ id, admin }: { id: string; admin: boolean }) {
+  const resource = useResource<{
+    indexing_status: string;
+    error_code: string | null;
+    has_text: boolean;
+  }>(`/files/${id}/index`);
+  const [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (
+      resource.data &&
+      ["pending", "processing"].includes(resource.data.indexing_status)
+    ) {
+      const timer = window.setTimeout(resource.reload, 3000);
+      return () => window.clearTimeout(timer);
+    }
+  }, [resource.data, resource.reload]);
+  async function retry() {
+    setBusy(true);
+    setError("");
+    try {
+      await api(`/files/${id}/reindex`, "POST");
+      resource.reload();
+    } catch (error) {
+      setError(errorMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+  const state = resource.data?.indexing_status;
+  return (
+    <div className="index-status">
+      <p className="muted">
+        حالة البحث في الوثيقة:{" "}
+        {state === "ready"
+          ? resource.data?.has_text
+            ? "المحتوى جاهز للبحث"
+            : "الاسم جاهز للبحث؛ لا يوجد نص مستخرج"
+          : state === "failed"
+            ? "تعذر استخراج النص؛ يبقى الملف الأصلي محفوظًا"
+            : state === "processing"
+              ? "جارٍ استخراج النص"
+              : state === "pending"
+                ? "بانتظار الفهرسة"
+                : "جارٍ التحقق…"}
+      </p>
+      {admin && state === "failed" && (
+        <button disabled={busy} onClick={() => void retry()}>
+          إعادة محاولة الفهرسة
+        </button>
+      )}
+      <ErrorBox error={error || resource.error} retry={resource.reload} />
+    </div>
+  );
+}
 
 export function ProjectFiles({
   user,
@@ -273,6 +329,11 @@ export function ProjectFiles({
             <h3>معلومات الملف</h3>
             <button onClick={() => setDetails(null)}>إغلاق المعلومات</button>
           </div>
+          <FileIndexStatus
+            key={details.id}
+            id={details.id}
+            admin={user.role === "Admin"}
+          />
           <h3 className="file-name">{details.original_name}</h3>
           <dl className="detail-grid">
             <div>
