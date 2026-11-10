@@ -9,6 +9,7 @@ def main():
         os.environ["DATABASE_URL"] = "sqlite:///" + (Path(directory) / "test.sqlite").as_posix()
         os.environ["ALLOWED_ORIGINS"] = '["http://localhost:5174"]'
         os.environ["COOKIE_SECURE"] = "false"
+        os.environ["FILE_STORAGE_PATH"] = str(Path(directory) / "files")
 
         import uvicorn
         from sqlalchemy.orm import Session

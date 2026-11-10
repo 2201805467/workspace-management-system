@@ -17,6 +17,7 @@ import { ProjectDetails } from "./pages/ProjectDetails";
 import { TaskDetails } from "./pages/TaskDetails";
 import { MyTasks } from "./pages/MyTasks";
 import "./Work.css";
+import "./Files.css";
 import "./App.css";
 
 function App() {

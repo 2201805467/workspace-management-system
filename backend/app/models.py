@@ -127,3 +127,26 @@ class Task(Base):
     assignee: Mapped[User] = relationship(foreign_keys=[assigned_to])
     creator: Mapped[User] = relationship(foreign_keys=[created_by])
     project: Mapped[Project] = relationship(foreign_keys=[project_id])
+
+
+class ProjectFile(Base):
+    __tablename__ = "files"
+    __table_args__ = (
+        CheckConstraint("size_bytes > 0 AND size_bytes <= 10485760", name="ck_files_size"),
+        CheckConstraint("extension IN ('pdf', 'png', 'jpg', 'jpeg', 'docx')", name="ck_files_extension"),
+        CheckConstraint("length(checksum) = 64", name="ck_files_checksum"),
+        Index("ix_files_project_deleted_created", "project_id", "deleted_at", "created_at", "id"),
+        Index("ix_files_uploader_created", "uploaded_by", "created_at", "id"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    project_id: Mapped[str] = mapped_column(ForeignKey("projects.id", ondelete="RESTRICT"))
+    uploaded_by: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    original_name: Mapped[str] = mapped_column(String(255))
+    storage_key: Mapped[str] = mapped_column(String(64), unique=True)
+    mime_type: Mapped[str] = mapped_column(String(100))
+    extension: Mapped[str] = mapped_column(String(5))
+    size_bytes: Mapped[int] = mapped_column()
+    checksum: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    uploader: Mapped[User] = relationship(foreign_keys=[uploaded_by])

@@ -8,3 +8,5 @@ __pycache__/
 .tmp/
 playwright-report/
 test-results/
+.data/
+backups/

@@ -1,5 +1,7 @@
 import secrets
 import logging
+import asyncio
+from contextlib import asynccontextmanager, suppress
 import threading
 import time
 from collections import defaultdict, deque
@@ -17,6 +19,8 @@ from .models import AccessSession, User
 from .schemas import Login, PasswordChange, PasswordReset, UserCreate, UserOut, UserStatus
 from .security import Admin, COOKIE_NAME, CurrentUser, Db, dummy_hash, hash_token, password_hasher
 from .work_routes import router as work_router
+from .file_routes import router as file_router
+from .file_storage import PrivateStorage
 
 
 def check_csrf(request: Request, x_requested_with: Annotated[str | None, Header()] = None):
@@ -28,8 +32,43 @@ def check_csrf(request: Request, x_requested_with: Annotated[str | None, Header(
             raise HTTPException(403, "مصدر الطلب غير مسموح")
 
 
-app = FastAPI(title="WorkSpace API", version="0.2.0", dependencies=[Depends(check_csrf)])
+async def audit_loop():
+    from sqlalchemy.orm import Session
+    from starlette.concurrency import run_in_threadpool
+    from .db import get_engine
+    from .file_audit import audit
+    def check():
+        with Session(get_engine()) as db:
+            report = audit(db)
+        if report["missing"] or report["orphans"] or report["mismatched"] or report["unavailable"] or report["stale_temporary"]:
+            logging.getLogger("workspace.storage").warning("storage_audit missing=%d orphan=%d mismatched=%d unavailable=%d stale=%d",
+                len(report["missing"]), len(report["orphans"]), len(report["mismatched"]), report["unavailable"], report["stale_temporary"])
+    while True:
+        await asyncio.sleep(get_settings().file_audit_interval_seconds)
+        try:
+            await run_in_threadpool(check)
+        except Exception as error:
+            logging.getLogger("workspace.storage").error("storage_audit_failed type=%s", type(error).__name__)
+
+
+@asynccontextmanager
+async def lifespan(app):
+    try:
+        PrivateStorage().initialize()
+    except OSError as error:
+        logging.getLogger("workspace.storage").error("storage_initialize_failed type=%s", type(error).__name__)
+    task = asyncio.create_task(audit_loop())
+    try:
+        yield
+    finally:
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
+
+
+app = FastAPI(title="WorkSpace API", version="0.3.0", dependencies=[Depends(check_csrf)], lifespan=lifespan)
 app.include_router(work_router)
+app.include_router(file_router)
 logger = logging.getLogger("workspace")
 
 

@@ -1,0 +1,156 @@
+{
+  "files": 5000,
+  "projects": 50,
+  "copy_chunk_bytes": 65536,
+  "query_plan": [
+    {
+      "Plan": {
+        "Node Type": "Limit",
+        "Parallel Aware": false,
+        "Async Capable": false,
+        "Startup Cost": 178.76,
+        "Total Cost": 178.81,
+        "Plan Rows": 20,
+        "Plan Width": 61,
+        "Actual Startup Time": 0.137,
+        "Actual Total Time": 0.141,
+        "Actual Rows": 20,
+        "Actual Loops": 1,
+        "Shared Hit Blocks": 8,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Parent Relationship": "Outer",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 178.76,
+            "Total Cost": 179.01,
+            "Plan Rows": 100,
+            "Plan Width": 61,
+            "Actual Startup Time": 0.135,
+            "Actual Total Time": 0.137,
+            "Actual Rows": 20,
+            "Actual Loops": 1,
+            "Sort Key": [
+              "created_at DESC",
+              "id"
+            ],
+            "Sort Method": "top-N heapsort",
+            "Sort Space Used": 30,
+            "Sort Space Type": "Memory",
+            "Shared Hit Blocks": 8,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Bitmap Heap Scan",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Relation Name": "files",
+                "Alias": "files",
+                "Startup Cost": 13.31,
+                "Total Cost": 176.1,
+                "Plan Rows": 100,
+                "Plan Width": 61,
+                "Actual Startup Time": 0.056,
+                "Actual Total Time": 0.077,
+                "Actual Rows": 100,
+                "Actual Loops": 1,
+                "Recheck Cond": "(((project_id)::text = '15b20e7f-1f87-46f4-8a01-f7655e4f5344'::text) AND (deleted_at IS NULL))",
+                "Rows Removed by Index Recheck": 0,
+                "Exact Heap Blocks": 4,
+                "Lossy Heap Blocks": 0,
+                "Shared Hit Blocks": 8,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Bitmap Index Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Index Name": "ix_files_project_deleted_created",
+                    "Startup Cost": 0.0,
+                    "Total Cost": 13.28,
+                    "Plan Rows": 100,
+                    "Plan Width": 0,
+                    "Actual Startup Time": 0.037,
+                    "Actual Total Time": 0.038,
+                    "Actual Rows": 100,
+                    "Actual Loops": 1,
+                    "Index Cond": "(((project_id)::text = '15b20e7f-1f87-46f4-8a01-f7655e4f5344'::text) AND (deleted_at IS NULL))",
+                    "Shared Hit Blocks": 4,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "Planning": {
+        "Shared Hit Blocks": 63,
+        "Shared Read Blocks": 0,
+        "Shared Dirtied Blocks": 0,
+        "Shared Written Blocks": 0,
+        "Local Hit Blocks": 0,
+        "Local Read Blocks": 0,
+        "Local Dirtied Blocks": 0,
+        "Local Written Blocks": 0,
+        "Temp Read Blocks": 0,
+        "Temp Written Blocks": 0
+      },
+      "Planning Time": 0.996,
+      "Triggers": [],
+      "Execution Time": 0.247
+    }
+  ],
+  "page_20": {
+    "elapsed_ms": 77.08,
+    "select_queries": 5
+  },
+  "page_100": {
+    "elapsed_ms": 55.65,
+    "select_queries": 5
+  },
+  "eight_downloads_four_threads_ms": 255.16,
+  "large_upload": {
+    "size_bytes": 4194749,
+    "python_peak_allocated_bytes": 611208,
+    "elapsed_ms": 275.52
+  },
+  "two_concurrent_uploads_ms": 107.78,
+  "memory_scope": "tracemalloc of copy/validation/storage service only; excludes client, multipart spooling and native decoder allocations"
+}

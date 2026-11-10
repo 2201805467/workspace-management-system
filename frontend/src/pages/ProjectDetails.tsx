@@ -8,6 +8,7 @@ import type { Member, Person, Project } from "../work";
 import { ErrorBox, Loading } from "../components/WorkUI";
 import { ProjectForm } from "../components/ProjectForm";
 import { TaskList } from "../components/TaskList";
+import { ProjectFiles } from "../components/ProjectFiles";
 
 export function ProjectDetails({ user }: { user: User }) {
   const { projectId } = useParams();
@@ -231,6 +232,11 @@ export function ProjectDetails({ user }: { user: User }) {
         user={user}
         project={item}
         members={members.data || []}
+      />
+      <ProjectFiles
+        key={"files-" + item.id + String(item.is_archived)}
+        user={user}
+        project={item}
       />
     </>
   );

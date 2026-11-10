@@ -139,7 +139,9 @@ test("Admin and employee complete the project/task workflow in Arabic", async ({
   await expect(page.getByRole("alert")).toContainText("أعد توزيعها");
   page.once("dialog", (dialog) => dialog.accept());
   await row.getByRole("button", { name: "حذف", exact: true }).click();
-  await expect(page.getByText("لا توجد نتائج", { exact: true })).toBeVisible();
+  await expect(
+    page.locator(".tasks-section").getByText("لا توجد نتائج", { exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "إزالة", exact: true }).last().click();
   await expect(page.locator(".member-list")).not.toContainText("عضو المشروع");
   page.once("dialog", (dialog) => dialog.accept());
